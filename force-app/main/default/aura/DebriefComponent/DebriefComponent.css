@@ -1,0 +1,46 @@
+.THIS .slds-form-element__help{
+    display: none;
+}
+.THIS .slds-form-element__icon{
+    display: none;
+}
+.THIS .paddingClass{
+    padding:0.75rem;
+}
+.THIS .colorClass{
+    color: rgb(194, 57, 52);
+}
+.THIS .widthClass{
+    width: 1500px;
+}
+.THIS .minWidthClass{
+    min-width: 200px;
+}
+.THIS.spins::after{
+    position: absolute;
+    content: 'Please wait..This may take a while..';
+    width: 100%;
+    text-align: center;
+    top: calc(50% + 3em);
+    font-weight: bold;
+}
+.THIS .slds-accordion__summary-action{
+    background-color: #f3f2f2;
+    font-size: 1em;
+    font-weight: bold;
+    text-decoration: none;
+    height: 35px;
+}
+.THIS .slds-accordion__summary-action:focus{
+    border-radius: 7px;
+    text-decoration: none;
+}
+.THIS .slds-accordion__list-item{
+    border: none;
+}
+.THIS .slds-input{
+    font-size: var(--lwc-fontSize3,0.8125rem);
+}
+.THIS .heightClass{
+    height: 300px;            
+}

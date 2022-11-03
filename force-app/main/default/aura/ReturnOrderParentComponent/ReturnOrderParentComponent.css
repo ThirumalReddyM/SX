@@ -1,0 +1,11 @@
+.THIS .slds-accordion__summary-action{
+    background-color: #f3f2f2;
+    font-size: 1em;
+    font-weight: bold;
+    text-decoration: none;
+    height: 35px;
+}
+.THIS .slds-accordion__summary-action:focus{
+    border-radius: 7px;
+    text-decoration: none;
+}

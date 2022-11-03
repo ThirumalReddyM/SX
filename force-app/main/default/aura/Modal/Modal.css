@@ -1,0 +1,24 @@
+.THIS .overlay-button {
+    float:right;
+    margin: 5px 5px 0 0;
+}
+
+.THIS .overlay-content {
+    margin-top: 15px;
+}
+
+.THIS .overlay {
+    position: absolute; /* Sit on top of the page content */
+    width: 50%; /* Full width (cover the whole page) */
+    height: 400px; /* Full height (cover the whole page) */
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(200,200,200,0.9); /* Black background with opacity */
+    z-index: 20; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+    padding: 0 0 0 5px;
+    margin:auto;
+    overflow: scroll;
+}

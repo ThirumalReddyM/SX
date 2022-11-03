@@ -1,0 +1,9 @@
+<aura:event type="COMPONENT">
+    <aura:attribute name="selectedId" type="String" default=""/>
+    <aura:attribute name="selectedRecord" type="Object" default=""/>
+    <aura:attribute name="selectedRowName" type="String" default=""/>
+    <aura:attribute name="selectedStockProdId" type="String" default=""/>
+    <aura:attribute name="selectedStockProdRowName" type="String" default=""/>
+    <aura:attribute name="index" type="String"/>
+    <aura:attribute name="headerName" type="String" default=""/> 
+</aura:event>

@@ -1,0 +1,43 @@
+<aura:component>
+    <aura:attribute name="searchTimeoutId" type="Integer"/>
+    <aura:attribute name="rows" type="Object" default=""/>
+    <aura:attribute name="originalData" type="Object" default=""/>
+    <aura:attribute name="cols" type="List" default=""/>
+    <aura:attribute name="sortBy" type="String" default=""/>
+    <aura:attribute name="sortDirection" type="String" default=""/>
+    <aura:attribute name="searchTerm" type="String"/>
+    <aura:attribute name="headerName" type="String"/>
+    <aura:attribute name="selectedRecord" type="List" default=""/>
+    <aura:attribute name="count" type="String"/>
+    
+    <aura:registerEvent name="SelectedRowEvent" type="c:SelectedRowEvent"/>
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <div class="slds-form slds-p-around_x-small">
+        <lightning:layout>
+            <lightning:layoutItem size="{!$Browser.formFactor == 'DESKTOP' ? '4' : '7'}">
+                <lightning:input value="{!v.searchTerm}" placeholder="Quick Find" onchange="{!c.onSearchTermChange}"/>
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+    
+    <div>
+        <lightning:datatable data="{!v.rows}"
+                             columns="{!v.cols}"
+                             keyField="Id"
+                             sortedBy="{!v.sortBy}"
+                             sortedDirection="{!v.sortDirection}"
+                             onrowselection="{!c.handleRowSelection}"
+                             maxRowSelection="1"
+                             onsort="{!c.handleSort}"/>
+        <aura:if isTrue="{!v.rows.length == 0}">
+            <br></br>
+            <div class="slds-align_absolute-center" style="font-weight:bold;">No matching record(s) found</div>
+        </aura:if>
+    </div>
+    <br></br>
+    <div align="right">
+        <lightning:button variant="neutral" label="Cancel" title="Cancel" onclick="{!c.closeModal}"/>
+        <lightning:button variant="brand" label="Select" title="Select" onclick="{!c.handleSelect}"/>
+    </div>
+</aura:component>

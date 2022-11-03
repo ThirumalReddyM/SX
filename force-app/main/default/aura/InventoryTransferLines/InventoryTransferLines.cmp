@@ -1,0 +1,39 @@
+<aura:component controller="InventoryClass">
+    <aura:attribute name="stockedSerialRows" type="Object" default=""/>
+    <aura:attribute name="originalStockedSerial" type="Object" default=""/>
+    <aura:attribute name="stockedSerialCols" type="List" default=""/>
+    
+    <aura:attribute name="rec" type="Object"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    
+    <aura:registerEvent name="RemoveEvent" type="c:RemoveRowEvent"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModal}"/>
+    
+    <!-- Application Event Handler -->
+    <aura:handler event="c:SelectedRowEvent" action="{!c.handleSelectedRow}"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+       
+    <tr class="slds-hint-parent" aura:id="target">
+        <td>
+            <lightning:buttonIcon iconName="utility:delete" alternativeText="Remove" disabled="{!v.rowIndex == 0}" title="Remove" name="{!v.rowIndex}" onclick="{!c.removeRow}"/>
+        </td>
+        <td style="padding-top:0.25rem;">
+            <lightning:recordEditForm density="comfy" objectApiName="ProductTransfer">
+                <lightning:inputField variant="label-hidden" aura:id="prodInput" fieldName="Product2Id" value="{!v.rec.Product2Id}"/>
+            </lightning:recordEditForm>
+        </td>
+        <td>
+            <lightning:input type="number" variant="label-hidden" aura:id="quantityInput" label="" name="Quantity" value="{!v.rec.QuantitySent}"/>
+        </td>
+        
+        <!-- Stocked Serial Input -->
+        <td>
+            <lightning:input type="search" variant="label-hidden" aura:id="stockedSerialInput" label="" name="StockedSerial" value="{!v.rec.StockedSerial}" onclick="{!c.openStockedSerialModal}"/>
+            <lightning:input type="search" class="slds-hide" variant="label-hidden" aura:id="stockedSerialId" label="" name="StockedSerialId" value="{!v.rec.FS_Product_Serial__c}"/>
+        </td>
+        <!-- Stocked Serial Input -->        
+    </tr>
+</aura:component>

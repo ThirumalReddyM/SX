@@ -1,0 +1,227 @@
+<aura:component controller="MaintainProductsAuraController">
+    <aura:attribute type="Id" name="opportunityId"/>
+    <aura:attribute type="Opportunity" name="opportunity"/>
+    <aura:attribute type="String" name="messageText"/>
+
+    <!-- change products -->
+    <aura:attribute type="Boolean" name="renderModal" default="false"/>
+    <aura:attribute type="String" name="selectedPlan" />
+    <aura:attribute type="String" name="newPlan" />
+    <aura:attribute type="Boolean" name="renderChangeProducts" default="false"/>
+    <aura:attribute type="MaintainProductsModel.ProductSearchResult" name="changeSearchResults"/>
+    <aura:attribute type="Boolean" name="anyMatches" default="false"/>
+    <aura:attribute type="Integer" name="countChangeResults" default="0"/>
+    <aura:attribute type="Integer" name="countChangeResultsMatched" default="0"/>
+    <aura:attribute name="newPlanSearchResults" type="List"/>
+
+    <!--opportunity line items-->
+    <aura:attribute type="MaintainProductsModel.Paging" name="paging"/>
+    <aura:attribute type="Integer" name="countWonSelected" default="0"/>
+    <aura:attribute type="Boolean" name="allWonSelected" default="false"/>
+    <aura:attribute type="MaintainProductsModel.LineItem[]" name="allLineItems"/>
+    <aura:attribute type="MaintainProductsModel.LineItem[]" name="lineItems"/>
+
+    <!--lost items-->
+    <aura:attribute type="Integer" name="countLostSelected" default="0"/>
+    <aura:attribute type="MaintainProductsModel.Paging" name="lostPaging"/>
+    <aura:attribute type="Boolean" name="allLostSelected" default="false"/>
+    <aura:attribute type="MaintainProductsModel.LineItem[]" name="allLostItems"/>
+    <aura:attribute type="MaintainProductsModel.LineItem[]" name="lostItems"/>
+    
+	<!-- event handlers -->
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <aura:handler name="pagingEvent" event="c:PagingEvent" action="{!c.onPaging}"/>
+	<aura:registerEvent name="pagingEvent" type="c:PagingEvent"/>
+    <aura:handler name="checkboxSelectEvent" event="c:CheckboxSelectEvent" action="{!c.onSelect}"/>
+	<aura:registerEvent name="checkboxSelectEvent" type="c:CheckboxSelectEvent"/>
+    <aura:registerEvent name="inputPicklistChangeEvent" type="c:InputPicklistChangeEvent"/>
+    <aura:handler name="inputPicklistChangeEvent" event="c:InputPicklistChangeEvent" action="{!c.onChangeInputPicklist}"/>
+    <aura:registerEvent name="autocompleteChangeEvent" type="c:AutocompleteChangeEvent"/>
+    <aura:handler name="autocompleteChangeEvent" event="c:AutocompleteChangeEvent" action="{!c.onChangeAutocomplete}"/>
+
+    <div class="container">
+        <c:spinner aura:id="spinner"/>
+
+        <c:Modal aura:id="modal" rendered="{!v.renderModal}" style="top:100px; background-color: rgba(200,200,200,0.95); border-radius:5px; padding:5px">
+            You have selected {!v.countWonSelected}&nbsp;{!v.selectedPlan} products.
+            <br/>
+            Do you want to select all matching plans for change?
+            <br/>
+            <lightning:button label="Yes" onclick="{!c.onModalYes}"/>
+            <lightning:button label="No" onclick="{!c.onModalNo}"/>
+            <lightning:button label="Cancel" onclick="{!c.onModalCancel}"/>
+        </c:Modal>
+        
+        <div class="page-title">Maintain Products</div>
+        <div class="opp-header-container">
+        	<div class="table">
+                <div class="row">
+                    <div class="cell">
+                    Account
+                    </div>
+                    <div class="cell">
+                        <a onclick="{!c.onGoToAccount}">{!v.opportunity.Account.Name}</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell">
+                    Opportunity
+                    </div>
+                    <div class="cell">
+                        <a onclick="{!c.onGoToOpportunity}">{!v.opportunity.Name}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aura:if isTrue="{!v.renderChangeProducts}">
+            <div class="change-products-container">
+                <div class="section-header">Find Product</div>
+                <div class="products-table">
+                    <div class="products-table-row">
+                        <div class="products-table-cell">
+                            Existing Plan
+                        </div>
+                        <div class="products-table-cell">
+                            {!v.selectedPlan}
+                        </div>
+                    </div>
+                    <div class="products-table-row">
+                        <div class="products-table-cell">
+                            New Plan
+                        </div>
+                        <div class="products-table-cell">
+                            <c:Autocomplete name="newPlan" value="{!v.newPlan}" searchResults="{!v.newPlanSearchResults}"/>
+                        </div>
+                    </div>
+                    <div class="products-table-row">
+                        <div class="products-table-cell">
+                        </div>
+                        <div class="products-table-cell">
+                            <lightning:button label="Search" onclick="{!c.onSearchProducts}"/>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="section-header">Selected Products</div>
+                <div class="products-table">
+                    <div class="products-table-row matched-count">
+                        <div class="products-table-cell">{!v.countChangeResultsMatched} out of {!v.countChangeResults} products matched</div>
+                    </div>
+                    <div class="products-table-row header">
+                        <!--<div class="products-table-cell">ID</div>-->
+                        <div class="products-table-cell">Model</div>
+                        <div class="products-table-cell">Serial Number</div>
+                        <div class="products-table-cell">Product Name</div>
+                        <div class="products-table-cell">Product Code</div>
+                        <div class="products-table-cell">Match</div>
+                        <!--<div class="products-table-cell">Plan</div>-->
+                    </div>
+                    <aura:iteration items="{!v.changeSearchResults}" var="li">
+                        <div class="products-table-row striped">
+                            <!--<div class="products-table-cell">{!li.opportunityLineItemId}</div>-->
+                            <div class="products-table-cell">{!li.model}</div>
+                            <div class="products-table-cell">{!li.serialNumber}</div>
+                            <div class="products-table-cell">{!li.productName}</div>
+                            <div class="products-table-cell">{!li.productCode}</div>
+                            <div class="products-table-cell">
+                                <aura:if isTrue="{!not(li.match)}">No match found</aura:if>
+                                <aura:if isTrue="{!li.match}"><span class="match">{!li.match.productCode}</span></aura:if>
+                            </div>
+                            <!--<div class="products-table-cell">{!li.plan}</div>-->
+                        </div>
+                    </aura:iteration>
+                    <div class="products-table-row">
+                        <div class="products-table-cell buttons-cell">
+                            <lightning:button label="Replace All" onclick="{!c.onReplaceAll}" disabled="{!not(v.anyMatches)}"/>
+                            <lightning:button label="Cancel" onclick="{!c.onCancelChangeProduct}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+        
+        <c:messages aura:id="messages" messageText="{!v.messageText}" messageType="confirm" hidden="true"/>
+
+        <div class="won-products-container">
+            <div class="section-header">Opportunity Products</div>
+            
+            <div class="products-table">
+                <div class="products-table-row">
+                    <div class="products-table-cell buttons-cell">
+                        <lightning:button label="Remove Selected" onclick="{!c.onLoseSelected}" disabled="{!v.renderChangeProducts}"/>
+                        <lightning:button label="Change Product" onclick="{!c.onChangeProduct}"/>
+                    </div>
+                </div>
+                <div class="products-table-row">
+                    <div class="{!'products-table-cell'+(v.countWonSelected > 0 ? ' selected-count': '' )}">{!v.countWonSelected} out of {!v.allLineItems.length} selected</div>
+                </div>
+                <div class="products-table-row header">
+                    <div class="products-table-cell"><c:checkbox id="allWonSelected" value="{!v.allWonSelected}" /></div>
+                    <div class="products-table-cell">Model</div>
+                    <div class="products-table-cell">Serial Number</div>
+                    <div class="products-table-cell">Product Name</div>
+                    <div class="products-table-cell">Product Code</div>
+                    <!--<div class="products-table-cell">Plan</div>-->
+                </div>
+                <aura:iteration items="{!v.lineItems}" var="li">
+                    <div class="products-table-row striped">
+                        <div class="products-table-cell"><c:checkbox value="{!li.selected}" id="{!'won-'+li.id}"/></div>
+                        <div class="products-table-cell">{!li.model}</div>
+                        <div class="products-table-cell">{!li.serialNumber}</div>
+                        <div class="products-table-cell">{!li.productName}</div>
+                        <div class="products-table-cell">{!li.productCode}</div>
+                        <!--<div class="products-table-cell">{!li.plan}</div>-->
+                    </div>
+                </aura:iteration>
+                <div class="products-table-row">
+                    <div class="products-table-cell paging-cell">
+                        <c:Paging aura:id="paging" paging="{!v.paging}"/>
+                    </div>
+                </div>
+            </div>        
+        </div>
+        
+        <div class="lost-products-container">
+            <div class="section-header">Lost Products</div>
+            
+            <div class="products-table">
+                <div class="products-table-row">
+                    <div class="products-table-cell buttons-cell">
+                        <lightning:button label="Restore Selected" onclick="{!c.onWinSelected}" disabled="{!v.renderChangeProducts}"/>
+                    </div>
+                </div>
+                <div class="products-table-row">
+                    <div class="{!'products-table-cell'+(v.countLostSelected > 0 ? ' selected-count': '' )}">{!v.countLostSelected} out of {!v.allLostItems.length} selected</div>
+                </div>
+                <div class="products-table-row header">
+                    <div class="products-table-cell"><c:checkbox value="{!v.allLostSelected}" id="allLostSelected"/></div>
+                    <div class="products-table-cell">Model</div>
+                    <div class="products-table-cell">Serial Number</div>
+                    <div class="products-table-cell">Reason Lost</div>
+                    <div class="products-table-cell">Product Name</div>
+                    <div class="products-table-cell">Product Code</div>
+                    <!--<div class="products-table-cell">Plan</div>-->
+                </div>
+                <aura:iteration items="{!v.lostItems}" var="li">
+                    <div class="products-table-row striped">
+                        <div class="products-table-cell"><c:checkbox value="{!li.selected}" id="{!'lost-'+li.Id}"/></div>
+                        <div class="products-table-cell">{!li.model}</div>
+                        <div class="products-table-cell">{!li.serialNumber}</div>
+                        <div class="products-table-cell">
+                            <c:InputPicklist id="{!li.id}" includeBlankOption="true" sobjectType="Lost_Opportunity_Product__c" fieldName="Reason__c" value="{!li.reason}"/>
+                        </div>
+                        <div class="products-table-cell">{!li.productName}</div>
+                        <div class="products-table-cell">{!li.productCode}</div>
+                        <!--<div class="products-table-cell">{!li.plan}</div>-->
+                    </div>
+                </aura:iteration>
+                <div class="products-table-row">
+                    <div class="products-table-cell paging-cell">
+                        <c:Paging aura:id="lostPaging" paging="{!v.lostPaging}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aura:component>

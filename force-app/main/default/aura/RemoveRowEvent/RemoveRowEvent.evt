@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT">
+	<aura:attribute name="indexVar" type="String"/>
+    <aura:attribute name="tabName" type="String"/>
+</aura:event>

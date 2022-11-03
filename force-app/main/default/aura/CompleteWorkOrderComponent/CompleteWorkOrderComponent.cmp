@@ -1,0 +1,109 @@
+<aura:component implements="force:appHostable,force:lightningQuickAction,flexipage:availableForAllPageTypes,lightning:isUrlAddressable">
+    
+    <aura:attribute name="recordId" type="String" default=""/>
+    <aura:attribute name="headerName" type="String" default=""/>
+    <aura:attribute name="workOrderStatus" type="String" default=""/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <lightning:navigation aura:id="navService"/>
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <lightning:spinner aura:id="loadSpinner" variant="brand" class="spins" alternativeText="Loading..." size="medium"/>
+    <lightning:spinner aura:id="saveSpinner" variant="brand" class="spins slds-hide" alternativeText="Loading..." size="medium"/>
+    
+    <lightning:messages/>
+    
+    <aura:html tag="style">
+        .toastMessage.forceActionsText{
+        white-space : pre-line !important;
+        font-size: var(--lwc-fontSize3,0.975rem);
+        }
+    </aura:html>
+    
+    <lightning:card title="{!v.headerName}">
+        <aura:set attribute="actions">
+            <lightning:buttonIcon iconName="utility:close" size="large" variant="bare" title="Close" onclick="{!c.handleCancel}"/>
+            <lightning:buttonIcon iconName="utility:save" size="large" variant="bare" title="Save" onclick="{!c.handleSubmit}"/>
+        </aura:set>
+        <lightning:recordEditForm aura:id="WorkOrderCreateForm" 
+                                  density="comfy"
+                                  objectApiName="WorkOrder"
+                                  recordId="{!v.recordId}"
+                                  onload="{!c.handleLoad}"
+                                  onsuccess="{!c.handleSuccess}"
+                                  onerror="{!c.handleError}">  
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="WorkOrderSection">    
+                <lightning:accordionSection name="WorkOrderSection" label="Work Order">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="WorkOrderNumber" disabled="true" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Status" value="{!v.workOrderStatus}" disabled="true" aura:id="fields"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Service_Guide__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Software_Version__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="ComplaintSection">
+                <lightning:accordionSection name="ComplaintSection" label="Complaint">
+                    <lightning:layout>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Complaint__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="End_User_Contact__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="CorrectionSection">
+                <lightning:accordionSection name="CorrectionSection" label="Correction">
+                    <lightning:layout>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Resolution_FIX_1__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Resolution_FIX_2__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="CauseSection">
+                <lightning:accordionSection name="CauseSection" label="Cause">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="What_0__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Why_1__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="What_1__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="Why_2__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="What_2__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <lightning:inputField fieldName="What_3__c" aura:id="fields" required="true"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        </lightning:recordEditForm>
+    </lightning:card>
+    <br></br>
+</aura:component>

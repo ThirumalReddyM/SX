@@ -1,0 +1,91 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:lightningQuickAction" controller="ReturnOrderHandler" access="global">
+    
+    <aura:attribute name="listOfReturnLines" type="List" default="[]"/>
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    <lightning:navigation aura:id="navService"/>
+    <aura:attribute name="pageReference" type="Object"/>
+    <aura:attribute name="LocationRecord" type="Object"/>
+    
+    <aura:attribute name="productrows" type="Object" default=""/>
+    <aura:attribute name="productcols" type="List" default=""/>
+    <aura:attribute name="productoriginalData" type="Object" default=""/>
+    <aura:attribute name="productloaded" type="Boolean" default="false"/>
+    <aura:attribute name="productcurrentIndex" type="Integer"/>
+    
+    <aura:attribute name="stockedSerialrows" type="Object" default=""/>
+    <aura:attribute name="stockedSerialcols" type="List" default=""/>
+    <aura:attribute name="stockedSerialoriginalData" type="Object" default=""/>
+    <aura:attribute name="stockedSerialloaded" type="Boolean" default="false"/>
+    <aura:attribute name="stockedSerialcurrentIndex" type="Integer"/>
+    
+    <aura:attribute name="searchedParam" type="String"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="itemStatusType" type="String"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="SelectRow" event="c:TableEvent" action="{!c.handleSelect}"/>
+    <aura:handler name="SearchEvent" event="c:ReturnOrderEvent" action="{!c.handleSearch}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModal}"/>
+    <aura:registerEvent name="ReturnOrderSubmitEvent" type="c:ReturnOrderSubmitEvent"/>
+    
+    <aura:method name="GetlistOfReturnLines" action="{!c.createReturnLines}" 
+                 access="public">
+        <aura:attribute name="ReturnLinesList" type="List" default="[]"/>
+    </aura:method>
+
+    <div style="overflow-x:scroll;">
+        
+        <lightning:card title="Return Order Line Items" iconName="standard:return_order_line_item">
+            <aura:set attribute="actions">
+                <lightning:button variant="neutral" label="Add row" title="Add row" iconName="utility:add" onclick="{!c.addNewRow}"/> 
+                <!-- <lightning:buttonIcon iconName="utility:add" variant="bare" title="Add a Row" onclick="{!c.addNewRow}"/> -->
+            </aura:set>
+            <!-- Table -->
+            <table class="slds-table slds-table_bordered slds-no-row-hover slds-table_cell-buffer" role="grid">
+                <thead>
+                    <tr>
+                        <th scope="col" height="22" style="width: 3rem"></th>
+                        <th scope="col" class="minWidthClass" height="22"><span style="color:red;padding-left: 2px;">*</span>Products</th>
+                        <th scope="col" height="22"><span style="color:red;padding-left: 2px;">*</span>Expected Qty</th>
+                        <th scope="col" class="minWidthClass" height="22">Stocked Serial</th>
+                        <th scope="col" height="22" style="width: 3rem"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <aura:iteration items="{!v.listOfReturnLines}" var="rec">
+                        <tr class="slds-hint-parent">
+                            <td style="font-weight: bold">
+                                <lightning:buttonIcon iconName="utility:delete" alternativeText="Remove" title="Remove" name="{!rec.index}" onclick="{!c.removeRow}"/>
+                            </td>
+                            <lightning:input type="text" variant="label-hidden" title="{!rec.index}" style="display:none" label="" aura:id="productNameField" name="Product"  value="{!rec.Product2Id}" required="true" disabled="true" />
+
+                            <td>
+                                <lightning:input type="search" variant="label-hidden" title="{!rec.index}" label="" aura:id="Product" name="Product" value="{!rec.Product2Name}" required="true" onfocus="{!c.openProduct}" placeholder="Search Products"/>
+                            </td>
+                            <td>
+                                <lightning:input type="number" variant="label-hidden" label="" aura:id="QuantityExpected" name="Expected Qty" value="{!rec.QuantityReturned}" min="1" required="true" messageWhenRangeUnderflow="Quantity cannot be less than 1"/>
+                            </td>
+                            <td>
+                                <lightning:input type="text" variant="label-hidden" title="{!rec.index}" style="display:none" label="" aura:id="Product" name="Product" value="{!rec.SVC_Stocked_Serial__c}" disabled="true"/>
+
+                                <lightning:input type="search" variant="label-hidden" label="" aura:id="StockedSerial" name="Stocked Serial" value="{!rec.SVC_Stocked_SerialName__c}" title="{!rec.index}" onfocus="{!c.openStockedSerial}" placeholder="Search Stocked Serials"/>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                </tbody>
+            </table>
+            
+            <!-- Footer -->
+           <!-- <footer class="slds-modal__footer" style="padding: 0.50rem 1rem;">
+                <lightning:button variant="brand" label="Create Return Order Line Items" title="Create Return Order Line Items" iconName="utility:save" onclick="{!c.createReturnLines}"/>
+            </footer> -->
+        </lightning:card>
+    </div>
+    <aura:if isTrue="{!v.productloaded}">
+        <c:TableChild rows="{!v.productrows}" cols="{!v.productcols}" originalData="{!v.productoriginalData}" objectName="{!v.objectName}" indexProd="{!v.productcurrentIndex}"/>
+    </aura:if>
+    <aura:if isTrue="{!v.stockedSerialloaded}">
+        <c:TableChild rows="{!v.stockedSerialrows}" cols="{!v.stockedSerialcols}" originalData="{!v.stockedSerialoriginalData}" objectName="{!v.objectName}" indexProd="{!v.stockedSerialcurrentIndex}"/>
+    </aura:if>
+    
+</aura:component>

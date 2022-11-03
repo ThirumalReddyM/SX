@@ -1,0 +1,26 @@
+<aura:component controller="InputPicklistController">
+    <aura:attribute name="id" type="String"/>
+    <aura:attribute name="value" type="String"/>
+    <aura:attribute name="sobjectType" type="String"/>
+    <aura:attribute name="fieldName" type="String"/>
+    <aura:attribute name="includeBlankOption" type="Boolean" default="false"/>
+    <aura:attribute name="multiple" type="Boolean" default="false"/>
+    <aura:attribute name="optionsLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="disabled" type="Boolean" default="false"/>
+    <aura:attribute name="options" type="SelectItem[]" default="[]"/>
+    <aura:attribute name="controllingValue" type="String"/><!-- for a dependent picklist, bind to the controlling picklist value-->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+	<aura:registerEvent name="inputPicklistChangeEvent" type="c:InputPicklistChangeEvent"/>
+    <aura:handler name="change" value="{!v.controllingValue}" action="{!c.onChangeControllingValue}"/>
+
+    <aura:if isTrue="{!v.optionsLoaded}">
+        <div class="slds-select_container">
+        <ui:inputSelect aura:id="inputPicklistSelect" class="slds-select" value="{!v.value}" disabled="{!v.disabled}" change="{!c.onChangeValue}">
+            <aura:iteration items="{!v.options}" var="o">
+                <ui:inputSelectOption label="{!o.label}" text="{!o.value}" value="{!v.value==o.value}"/>
+            </aura:iteration>
+        </ui:inputSelect>         
+		</div>            
+	</aura:if>
+
+</aura:component>

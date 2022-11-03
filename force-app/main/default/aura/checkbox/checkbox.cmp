@@ -1,0 +1,7 @@
+<aura:component >
+    <aura:attribute name="id" type="String"/>
+    <aura:attribute name="value" type="Boolean"/>
+	<aura:registerEvent name="checkboxSelectEvent" type="c:CheckboxSelectEvent"/>
+
+    <ui:inputCheckbox value="{!v.value}" change="{!c.onSelect}"/>
+</aura:component>

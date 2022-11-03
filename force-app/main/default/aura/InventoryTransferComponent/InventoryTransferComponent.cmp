@@ -1,0 +1,84 @@
+<aura:component controller="InventoryClass" implements="force:appHostable,flexipage:availableForAllPageTypes,lightning:isUrlAddressable">
+    
+    <aura:attribute name="productRows" type="Object" default=""/>
+    <aura:attribute name="originalProduct" type="Object" default=""/>
+    <aura:attribute name="prodCols" type="List" default=""/>
+    
+    <aura:attribute name="loaded" type="Boolean" default="false"/>
+    <aura:attribute name="showSpinner" type="Boolean" default="true"/>
+    <aura:attribute name="headerSection" type="List" default=""/>
+    
+    <aura:attribute name="listOfProducts" type="List" default="[]"/>
+    <aura:attribute name="recordId" type="String" default=""/>
+    
+    <lightning:navigation aura:id="navService"/>
+    <lightning:workspaceAPI aura:id="workspace"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="RemoveEvent" event="c:RemoveRowEvent" action="{!c.removeSelectedRow}"/>
+    
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner aura:id="loadSpinner" variant="brand" alternativeText="Loading..." size="medium"/>
+    </aura:if>
+    <lightning:spinner aura:id="saveSpinner" variant="brand" class="spins slds-hide" alternativeText="Loading..." size="medium"/>
+    
+    <aura:html tag="style">
+        .toastMessage.forceActionsText{
+        white-space : pre-line !important;
+        font-size: var(--lwc-fontSize3,0.975rem);
+        }
+    </aura:html>
+    
+    <lightning:card title="Inventory Transfer">
+        <aura:set attribute="actions">
+            <lightning:buttonIcon iconName="utility:close" size="large" variant="bare" title="Close" onclick="{!c.handleCancel}"/>
+            <lightning:buttonIcon iconName="utility:save" size="large" variant="bare" title="Save" onclick="{!c.handleSaveRecords}"/>
+        </aura:set>
+        
+        <lightning:recordEditForm density="comfy" aura:id="prodForm" objectApiName="ProductTransfer" onload="{!c.handleLoad}">    
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="stockTransferSection">
+                <lightning:accordionSection name="stockTransferSection" label="Product Transfer">
+                    <lightning:layout multipleRows="true">
+                        <aura:iteration items="{!v.headerSection}" var="prog">
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <label class="{!prog.required ? 'required' : ''}">{!prog.label}</label>
+                                <lightning:inputField variant="label-hidden" disabled="{!(!prog.editable)}" aura:id="prodTransferInput" fieldName="{!prog.fieldName}"/>
+                            </lightning:layoutItem>
+                        </aura:iteration>    
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        </lightning:recordEditForm>
+        
+        <!-- Lines -->
+        <h1 style="padding-left:1rem;font-size:1.1em;" class="slds-page-header"><b>Lines</b></h1>
+        <lightning:tabset variant="scoped" class="paddingClass">
+            <lightning:tab label="Product Transfer Line">
+                <lightning:buttonIcon iconName="utility:add" aura:id="prod" variant="bare" title="Add a Row" onclick="{!c.handleAddProductRow}"/>
+                <br></br>
+                <br></br>
+                <aura:if isTrue="{!v.loaded}">
+                    <div>
+                        <table class="slds-table slds-table_bordered" role="grid">
+                            <thead>
+                                <tr>
+                                    <th scope="col" height="22" style="width:3rem;"></th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Product</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Quantity Transferred</th>
+                                    <th style="min-width:250px;" scope="col" height="22">Stocked Serial</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.listOfProducts}" var="item" indexVar="index">
+                                    <c:InventoryTransferLines aura:id="productLines" rec="{!item}" rowIndex="{!index}"/>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                </aura:if>
+            </lightning:tab>
+        </lightning:tabset>
+    </lightning:card>
+    <br></br>
+</aura:component>

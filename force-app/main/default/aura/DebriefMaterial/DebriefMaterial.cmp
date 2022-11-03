@@ -1,0 +1,99 @@
+<aura:component controller="DebriefClass">
+    <aura:attribute name="loaded" type="Boolean" default="false"/>
+    <aura:attribute name="stockLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="lotControlledLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="stockedSerialLoaded" type="Boolean" default="false"/>
+    
+    <aura:attribute name="stockRows" type="Object" default=""/>
+    <aura:attribute name="originalStock" type="Object" default=""/>
+    <aura:attribute name="stockCols" type="List" default=""/>
+    
+    <aura:attribute name="stockedSerialRows" type="Object" default=""/>
+    <aura:attribute name="originalStockedSerial" type="Object" default=""/>
+    <aura:attribute name="stockedSerialCols" type="List" default=""/>
+    
+    <aura:attribute name="locationRows" type="Object" default=""/>
+    <aura:attribute name="originalLocations" type="Object" default=""/>
+    <aura:attribute name="locationCols" type="List" default=""/>
+    
+    <aura:attribute name="lotControlledRows" type="Object" default=""/>
+    <aura:attribute name="originalLotControlledStock" type="Object" default=""/>
+    
+    <aura:attribute name="rec" type="Object"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    
+    <aura:registerEvent name="RemoveEvent" type="c:RemoveRowEvent"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModal}"/>
+    
+    <!-- Application Event Handler -->
+    <aura:handler event="c:SelectedRowEvent" action="{!c.handleSelectedRow}"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+       
+    <tr class="slds-hint-parent" aura:id="target">
+        <td>
+            <lightning:buttonIcon iconName="utility:delete" alternativeText="Remove" title="Remove" name="{!v.rowIndex}" onclick="{!c.removeRow}"/>
+        </td>
+        <td>
+            <lightning:input type="text" disabled="true" variant="label-hidden" aura:id="technicianInput" label="" name="Technician" value="{!v.rec.TechnicianName}"/>
+            <lightning:input type="text" disabled="true" class="slds-hide" variant="label-hidden" aura:id="technicianId" label="" name="TechnicianId" value="{!v.rec.Service_Resource__c}"/>
+        </td>
+        <td>
+            <lightning:input type="search" variant="label-hidden" aura:id="locationInput" label="" name="ConsumedFromLocationName" value="{!v.rec.ConsumedFromLocationName}" onclick="{!c.openLocationModal}"/>
+            <lightning:input class="slds-hide" variant="label-hidden" aura:id="locationId" label="" name="ConsumedFromLocationId" value="{!v.rec.FS_Consumed_From_Location__c}"/>
+        </td>
+        <td>
+            <lightning:input type="search" variant="label-hidden" aura:id="stockInput" label="" name="ProductStock" value="{!v.rec.ProductStockName}" onclick="{!c.openStockModal}"/>
+            <lightning:input class="slds-hide" variant="label-hidden" aura:id="stockId" label="" name="ProductItemId" value="{!v.rec.ProductItemId}"/>
+        </td>
+        <td>
+            <lightning:input type="text" disabled="true" variant="label-hidden" aura:id="lineInput" title="{!v.rec.ProductName}" label="" name="ProductName" value="{!v.rec.ProductName}"/>
+        </td>
+        <td style="padding-top:0.25rem;">
+            <lightning:recordEditForm density="comfy" objectApiName="ProductConsumed">
+                <lightning:inputField variant="label-hidden" aura:id="quantityInput" fieldName="QuantityConsumed" value="{!v.rec.QuantityConsumed}"/>
+            </lightning:recordEditForm>
+        </td>
+        
+        <!-- Stocked Serial Inputs -->
+        <td>
+            <lightning:input type="search" variant="label-hidden" aura:id="lotControlledInput" label="" name="LotControlledSerial" value="{!v.rec.LotControlledName}" onclick="{!c.openLotControlledModal}"/>
+            <lightning:input type="search" class="slds-hide" variant="label-hidden" aura:id="lotControlledId" label="" name="LotControlledId" value="{!v.rec.Lot_Controlled_Part__c}"/>
+            <lightning:input type="search" class="slds-hide" variant="label-hidden" aura:id="lotNumberInput" label="" name="LotNumber" value="{!v.rec.SVC_WDLotNumber__c}"/>
+        </td>
+        <td>
+            <lightning:input type="search" variant="label-hidden" aura:id="stockedSerialInput" label="" name="SerialNumber" value="{!v.rec.StockedSerialName}" onclick="{!c.openStockedSerialModal}"/>
+            <lightning:input type="search" class="slds-hide" variant="label-hidden" aura:id="stockedSerialId" label="" name="StockedSerialId" value="{!v.rec.Stocked_Serial__c}"/>
+        </td>
+        <!-- Stocked Serial Inputs -->
+
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="returnInput" label="" name="Return" value="{!v.rec.SVC_SER_Returnable__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="refurbishInput" label="" name="Refurbish" value="{!v.rec.SER_Refurbishable__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="deconInput" label="" name="Decon" value="{!v.rec.SER_Decon_Required__c}"/>
+        </td>
+        <td>
+            <lightning:input type="text" variant="label-hidden" aura:id="trackingInput" label="" name="TrackingNumber" value="{!v.rec.Tracking_Number__c}"/>
+        </td>
+        <td style="padding-top:0.25rem;">
+            <lightning:recordEditForm density="comfy" objectApiName="ProductConsumed">
+                <lightning:inputField variant="label-hidden" aura:id="reasonInput" fieldName="Reason_Code__c" value="{!v.rec.Reason_Code__c}"/>
+            </lightning:recordEditForm>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="lineTypeInput" label="" name="LineType" value="{!v.rec.FS_Line_Type__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="activityTypeInput" label="" name="ActivityType" value="{!v.rec.FS_Activity_Type__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="subTypeInput" label="" name="SubType" value="{!v.rec.Line_Sub_Type__c}"/>
+        </td>
+    </tr>
+</aura:component>

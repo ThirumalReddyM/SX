@@ -1,0 +1,8 @@
+<aura:event type="APPLICATION">
+    <aura:attribute name="selectedRecord" type="List" default=""/>
+    <aura:attribute name="headerName" type="String" default=""/> 
+    <aura:attribute name="count" type="String" default=""/>
+    <aura:attribute name="selectedId" type="String" default=""/> 
+    <aura:attribute name="selectedRowName" type="String" default=""/>
+    <aura:attribute name="index" type="String" default=""/>
+</aura:event>

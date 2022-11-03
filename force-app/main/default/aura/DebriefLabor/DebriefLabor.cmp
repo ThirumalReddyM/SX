@@ -1,0 +1,63 @@
+<aura:component>
+    <aura:attribute name="rows" type="Object" default=""/>
+    <aura:attribute name="originalData" type="Object" default=""/>
+    <aura:attribute name="cols" type="List" default=""/>
+    <aura:attribute name="rec" type="Object"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    <aura:attribute name="tabName" type="String"/>
+    
+    <aura:registerEvent name="RemoveEvent" type="c:RemoveRowEvent"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!-- Application Event Handler -->
+    <aura:handler event="c:SelectedRowEvent" action="{!c.handleSelect}"/>
+    
+    <lightning:overlayLibrary aura:id="overlayLib"/>
+    
+    <tr class="slds-hint-parent">
+        <td>
+            <lightning:buttonIcon iconName="utility:delete" alternativeText="Remove" title="Remove" name="{!v.rowIndex}" onclick="{!c.removeRow}"/>
+        </td>
+        <td>
+            <lightning:input type="text" disabled="true" variant="label-hidden" aura:id="technicianInput" label="" name="Technician" value="{!v.rec.TechnicianName}"/>
+            <lightning:input type="text" class="slds-hide" variant="label-hidden" aura:id="technicianId" label="" name="TechnicianId" value="{!v.rec.Service_Resource__c}"/>
+        </td>
+        <td>
+            <lightning:input type="search" class="slds-hide" variant="label-hidden" label="" aura:id="productInput" name="PricebookEntry" value="{!v.rec.PricebookEntryId}"/>
+            <lightning:input type="search" variant="label-hidden" label="" aura:id="productNameInput" name="ProductName" value="{!v.rec.ProductName}" onclick="{!c.openProductModal}"/>
+        </td>
+        <td style="padding-top:0.5rem;">
+            <lightning:input type="datetime" variant="label-hidden" aura:id="startDateInput" label="" name="StartTime" value="{!v.rec.FSL_Start_Date_and_Time__c}"/>
+        </td>
+        <td style="padding-top:0.25rem;">
+            <lightning:recordEditForm density="comfy" objectApiName="ProductConsumed">
+                <lightning:inputField variant="label-hidden" aura:id="quantityInput" fieldName="QuantityConsumed" value="{!v.rec.QuantityConsumed}"/>
+            </lightning:recordEditForm>
+        </td>
+        <td style="padding-top:0.5rem;">
+            <lightning:input type="datetime" disabled="true" variant="label-hidden" aura:id="endDateInput" label="" name="EndTime" value=""/>
+        </td>
+        <aura:if isTrue="{!v.tabName == 'Labor'}">
+            <td style="padding-top:0.25rem;">
+                <lightning:recordEditForm density="comfy" aura:id="prodForm" objectApiName="ProductConsumed">
+                    <lightning:inputField variant="label-hidden" aura:id="appInput" fieldName="Application_Workflow_Problem__c" value="{!v.rec.Application_Workflow_Problem__c}"/>
+                </lightning:recordEditForm>
+            </td>
+        </aura:if>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="lineTypeInput" label="" name="LineType" value="{!v.rec.FS_Line_Type__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="activityTypeInput" label="" name="ActivityType" value="{!v.rec.FS_Activity_Type__c}"/>
+        </td>
+        <td>
+        	<lightning:input type="text" disabled="true" variant="label-hidden" aura:id="subTypeInput" label="" name="SubType" value="{!v.rec.Line_Sub_Type__c}"/>
+        </td>
+        <aura:if isTrue="{!v.tabName == 'Labor'}">
+            <td>
+                <lightning:input type="text" disabled="true" variant="label-hidden" aura:id="divisionInput" label="" name="DivisionProduct" value="{!v.rec.SVC_Division_Products__c}"/>
+            </td>
+        </aura:if>
+    </tr>
+</aura:component>

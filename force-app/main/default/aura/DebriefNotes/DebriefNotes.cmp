@@ -1,0 +1,23 @@
+<aura:component>
+    <aura:attribute name="rec" type="Object"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    
+    <aura:handler name="SelectRow" event="c:SelectedRowEvent" action="{!c.handleSelect}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModal}"/>
+    
+    <aura:registerEvent name="RemoveEvent" type="c:RemoveRowEvent"/>
+    
+    <tr class="slds-hint-parent">
+        <td>
+            <lightning:buttonIcon iconName="utility:delete" alternativeText="Remove" title="Remove" name="{!v.rowIndex}" onclick="{!c.removeRow}"/>
+        </td>
+        <td style="padding-top:0.25rem;">
+            <lightning:recordEditForm density="comfy" objectApiName="SVC_WO_Note__c">
+                <lightning:inputField variant="label-hidden" aura:id="typeInput" fieldName="SVC_Note_Type__c" value="{!v.rec.SVC_Note_Type__c}"/>
+            </lightning:recordEditForm>
+        </td>
+        <td>
+            <lightning:textarea variant="label-hidden" class="textAreaBody" label="" aura:id="descInput" name="Description" value="{!v.rec.SVC_Note_Description__c}"/>
+        </td>
+    </tr>
+</aura:component>

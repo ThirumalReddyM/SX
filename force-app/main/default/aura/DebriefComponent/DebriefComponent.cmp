@@ -1,0 +1,206 @@
+<aura:component controller="DebriefClass" implements="force:appHostable,flexipage:availableForAllPageTypes,lightning:isUrlAddressable">
+    <aura:attribute name="productRows" type="Object" default=""/>
+    <aura:attribute name="originalProduct" type="Object" default=""/>
+    <aura:attribute name="prodCols" type="List" default=""/>
+    
+    <aura:attribute name="travelProductRows" type="Object" default=""/>
+    <aura:attribute name="originalTravelProduct" type="Object" default=""/>
+    <aura:attribute name="travelProdCols" type="List" default=""/>
+    
+    <aura:attribute name="locationRows" type="Object" default=""/>
+    <aura:attribute name="originalLocations" type="Object" default=""/>
+    <aura:attribute name="locationCols" type="List" default=""/>
+    
+    <aura:attribute name="loaded" type="Boolean" default="false"/>
+    <aura:attribute name="workOrderInfoSection" type="List" default=""/>
+    <aura:attribute name="taskClosureSection" type="List" default=""/>
+    
+    <aura:attribute name="listOfMaterialLines" type="List" default="[]"/>
+    <aura:attribute name="listOfLaborLines" type="List" default="[]"/>
+    <aura:attribute name="listOfTravelLines" type="List" default="[]"/>
+    <aura:attribute name="listOfNoteLines" type="List" default="[]"/>
+    
+    <aura:attribute name="recordId" type="String" default=""/>
+    <aura:attribute name="caseId" type="String" default=""/>
+    <aura:attribute name="dataMap" type="Map" default=""/>
+    <aura:attribute name="locationMap" type="Map" default="{}"/>
+    <aura:attribute name="pcMap" type="Map" default="{}"/>
+    <aura:attribute name="removedRecords" type="String[]" default=""/>
+    
+    <lightning:navigation aura:id="navService"/>
+    <lightning:workspaceAPI aura:id="workspace"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="RemoveEvent" event="c:RemoveRowEvent" action="{!c.removeSelectedRow}"/>
+    <aura:handler name="change" value="{!v.pageReference}" action="{!c.doInit}"/>
+    
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    <lightning:spinner aura:id="loadSpinner" variant="brand" alternativeText="Loading..." size="medium"/>
+    <lightning:spinner aura:id="saveSpinner" variant="brand" class="spins slds-hide" alternativeText="Loading..." size="medium"/>
+    
+    <aura:html tag="style">
+        .toastMessage.forceActionsText{
+        white-space : pre-line !important;
+        font-size: var(--lwc-fontSize3,0.975rem);
+        }
+    </aura:html>
+    
+    <lightning:card title="FSE Work Order Debrief">
+        <aura:set attribute="actions">
+            <lightning:buttonIcon iconName="utility:close" size="large" variant="bare" title="Close" onclick="{!c.handleCancel}"/>
+            <lightning:buttonIcon iconName="utility:save" size="large" variant="bare" title="Save" onclick="{!c.handleSaveRecords}"/>
+        </aura:set>
+        
+        <lightning:recordEditForm density="comfy" aura:id="prodForm" objectApiName="WorkOrder">    
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="workOrderInfoSection">
+                <lightning:accordionSection name="workOrderInfoSection" label="Work Order Information">
+                    <lightning:layout multipleRows="true">
+                        <aura:iteration items="{!v.workOrderInfoSection}" var="prog">
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <label class="{!prog.required ? 'required' : ''}">{!prog.label}</label>
+                                <lightning:inputField variant="label-hidden" disabled="{!(!prog.editable)}" aura:id="workOrderInput" fieldName="{!prog.fieldName}"/>
+                            </lightning:layoutItem>
+                        </aura:iteration>    
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="taskClosureSection">
+                <lightning:accordionSection name="taskClosureSection" label="Task Closure Coding">
+                    <lightning:layout multipleRows="true">
+                        <aura:iteration items="{!v.taskClosureSection}" var="prog">
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <label class="{!prog.required ? 'required' : ''}">{!prog.label}</label>
+                                <lightning:inputField variant="label-hidden" disabled="{!(!prog.editable)}" aura:id="workOrderInput" fieldName="{!prog.fieldName}"/>
+                            </lightning:layoutItem>
+                        </aura:iteration>    
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+        </lightning:recordEditForm>
+        
+        <!-- Lines -->
+        <h1 style="padding-left:1rem;font-size:1.1em;" class="slds-page-header"><b>Lines</b></h1>
+        <lightning:tabset variant="scoped" class="paddingClass">
+            <lightning:tab label="Material">
+                <lightning:buttonIcon iconName="utility:add" aura:id="material" variant="bare" title="Add a Row" onclick="{!c.handleAddMaterialRow}"/>
+                <br></br>
+                <br></br>
+                <aura:if isTrue="{!v.loaded}">
+                    <div aura:id="materialDiv" style="overflow-x:scroll;">
+                        <table class="slds-table slds-table_bordered" role="grid">
+                            <thead>
+                                <tr>
+                                    <th scope="col" height="22" style="width:3rem;"></th>
+                                    <th class="minWidthClass" scope="col" height="22">Technician</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Consumed From Location</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Product Stock</th>
+                                    <th class="minWidthClass" scope="col" height="22">Product</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Quantity</th>
+                                    <th style="min-width:250px;" scope="col" height="22">Lot Controlled Part</th>
+                                    <th style="min-width:250px;" scope="col" height="22">Stocked Serial</th>
+                                    <th class="minWidthClass" scope="col" height="22">SER Returnable</th>
+                                    <th class="minWidthClass" scope="col" height="22">SER Refurbishable</th>
+                                    <th class="minWidthClass" scope="col" height="22">SER Decon Required</th>
+                                    <th class="minWidthClass" scope="col" height="22">Tracking Number</th>
+                                    <th style="min-width:400px;" scope="col" height="22">Reason for No Tracking #</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Activity Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Sub Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.listOfMaterialLines}" var="item" indexVar="index">
+                                    <c:DebriefMaterial aura:id="materialComp" rec="{!item}" rowIndex="{!index}"
+                                                       locationRows="{!v.locationRows}" originalLocations="{!v.originalLocations}" locationCols="{!v.locationCols}"/>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Labor">
+                <lightning:buttonIcon iconName="utility:add" aura:id="labor" variant="bare" title="Add a Row" onclick="{!c.handleAddLaborRow}"/>
+                <br></br>
+                <br></br>
+                <aura:if isTrue="{!v.loaded}">
+                    <div aura:id="laborDiv" style="overflow-x:scroll;">
+                        <table class="slds-table slds-table_bordered" role="grid">
+                            <thead> 
+                                <tr>
+                                    <th scope="col" height="22" style="width:3rem;"></th>
+                                    <th class="minWidthClass" scope="col" height="22">Technician</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Product</th>
+                                    <th style="min-width:400px;" scope="col" height="22"><span class="colorClass">*</span> Start Date and Time</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Quantity</th>
+                                    <th style="min-width:400px;" scope="col" height="22">End Date and Time</th>
+                                    <th class="minWidthClass" scope="col" height="22">Application Workflow Problem</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Activity Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Sub Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Division Products</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.listOfLaborLines}" var="item" indexVar="index">
+                                    <c:DebriefLabor rows="{!v.productRows}" cols="{!v.prodCols}" originalData="{!v.originalProduct}"
+                                                    aura:id="laborComp" rec="{!item}" rowIndex="{!index}" tabName="Labor"/>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                </aura:if>
+            </lightning:tab>
+            <lightning:tab label="Travel Charges">
+                <lightning:buttonIcon iconName="utility:add" aura:id="labor" variant="bare" title="Add a Row" onclick="{!c.handleAddTravelRow}"/>
+                <br></br>
+                <br></br>
+                <aura:if isTrue="{!v.loaded}">
+                    <div aura:id="travelDiv" style="overflow-x:scroll;">
+                        <table class="slds-table slds-table_bordered" role="grid">
+                            <thead>
+                                <tr>
+                                    <th scope="col" height="22" style="width:3rem;"></th>
+                                    <th class="minWidthClass" scope="col" height="22">Technician</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Product</th>
+                                    <th style="min-width:400px;" scope="col" height="22"><span class="colorClass">*</span> Start Date and Time</th>
+                                    <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Quantity</th>
+                                    <th style="min-width:400px;" scope="col" height="22">End Date and Time</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Activity Type</th>
+                                    <th class="minWidthClass" scope="col" height="22">Line Sub Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <aura:iteration items="{!v.listOfTravelLines}" var="item" indexVar="index">
+                                    <c:DebriefLabor rows="{!v.travelProductRows}" cols="{!v.travelProdCols}" originalData="{!v.originalTravelProduct}"
+                                                    aura:id="laborComp" rec="{!item}" rowIndex="{!index}" tabName="Travel"/>
+                                </aura:iteration>
+                            </tbody>
+                        </table>
+                    </div>
+                </aura:if>                
+            </lightning:tab>
+            <lightning:tab label="Work Order Notes">
+                <lightning:buttonIcon iconName="utility:add" aura:id="labor" variant="bare" title="Add a Row" onclick="{!c.handleAddNotesRow}"/>
+                <br></br>
+                <br></br>
+                <table class="slds-table slds-table_bordered" role="grid">
+                    <thead>
+                        <tr>
+                            <th scope="col" height="22" style="width:3rem;"></th>
+                            <th scope="col" height="22"><span class="colorClass">*</span> Note Type</th>
+                            <th scope="col" height="22">Note Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.listOfNoteLines}" var="item" indexVar="index">
+                            <c:DebriefNotes aura:id="notesComp" rec="{!item}" rowIndex="{!index}"/>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </lightning:tab>
+        </lightning:tabset>
+    </lightning:card>
+    <br></br>
+</aura:component>

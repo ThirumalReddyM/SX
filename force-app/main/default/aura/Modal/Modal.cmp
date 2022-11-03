@@ -1,0 +1,20 @@
+<aura:component >
+    <aura:attribute name="rendered" type="Boolean" default="false"/>
+    <aura:attribute name="style" type="String" default=""/>
+    <aura:registerEvent name="modalClosedEvent" type="c:ModalClosedEvent"/>
+
+    
+    <aura:if isTrue="{!v.rendered}">
+    
+	<div style="position:relative">
+        <div aura:id="overlay" class="overlay" style="{!v.style}">    
+            <div class="overlay-button">
+            <lightning:buttonIcon iconName="utility:close" onclick="{!c.onClose}"/>
+            </div>    
+            <div class="overlay-content">
+                <p>{!v.body}</p>
+            </div>
+        </div>
+    </div>	
+    </aura:if>
+</aura:component>

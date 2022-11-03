@@ -1,0 +1,141 @@
+<template>
+	<div if:true={assetData}>
+		<lightning-card  variant="Narrow"  title="Asset Hierarchy" icon-name="standard:hierarchy"></lightning-card>
+		<lightning-tree-grid 
+			columns={gridColumns} 
+			data={gridData} 
+			expanded-rows = {gridExpandedRows}
+			is-loading={isLoading} 
+			key-field="Id"
+			hide-checkbox-column="true" 
+			onrowaction={handleRowAction}
+		></lightning-tree-grid>
+	</div>
+	<template if:true={isChildEditable}>
+		<section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+			aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+			<div class="slds-modal__container">
+				<header class="slds-modal__header">
+					<button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                    title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close"
+                            alternative-text="close"
+                            variant="inverse"
+                            size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+					<h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit Asset</h2>
+				</header>
+				<lightning-record-edit-form
+					object-api-name="Asset"
+					record-id={selecteChildRecId}
+					onsuccess={handleSuccess} 
+					onsubmit ={handleSubmit}
+					onerror={handleError}
+				>
+					<div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">						
+						<lightning-accordion allow-multiple-sections-open="true" active-section-name="LocationSection">
+                            <lightning-accordion-section name="LocationSection" label="Asset Information">
+                                <lightning-layout multiple-rows="true">
+                                    <lightning-layout-item size="6" flexibility="auto" padding="around-small">
+                                        <label>Name</label>
+                                        <lightning-output-field field-name="Name" variant="label-hidden"></lightning-output-field>
+                                    </lightning-layout-item>
+									<lightning-layout-item size="6" flexibility="auto" padding="around-small">
+                                        <label>Serial Number</label>
+                                        <lightning-output-field field-name="SerialNumber" variant="label-hidden"></lightning-output-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" flexibility="auto" padding="around-small">
+                                        <label>Oracle Id</label>
+                                        <lightning-output-field field-name="SVC_Oracle_ID__c" variant="label-hidden"></lightning-output-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" flexibility="auto" padding="around-small">
+                                        <label>Product</label>
+                                        <lightning-output-field field-name="Product2Id" variant="label-hidden"></lightning-output-field>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" flexibility="auto" padding="around-small">
+                                        <label>Location</label>
+                                        <lightning-output-field field-name="LocationId" variant="label-hidden" disabled="true"></lightning-output-field>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </lightning-accordion-section>
+                        </lightning-accordion>
+                        <lightning-accordion allow-multiple-sections-open="true" active-section-name="parentAssetSection">
+                                <lightning-accordion-section name="parentAssetSection" label="Parent Asset Information">
+                                    <lightning-layout multiple-rows="true">
+                                        <lightning-layout-item size="12" flexibility="auto" padding="around-small">
+											<lightning-input-field variant="label-hidden" field-name="ParentId" value={parentAssetId} class="slds-hide"></lightning-input-field>
+											<div if:true={recordId}>
+												<div class="slds-form-element">
+													<div class="slds-form-element__control">
+														<div class="slds-combobox_container">
+															<div id="box" class={boxClass} aria-expanded="true" aria-haspopup="listbox"
+																role="combobox">
+																<div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+																	role="none">
+																	<template if:true={isValueSelected}>
+																		<div id="lookup-pill" class="slds-pill-container">
+																			<lightning-pill class="pillSize" label={selectedName}
+																				name={selectedName} onremove={handleRemovePill}>
+																				<lightning-icon icon-name={iconName} alternative-text="acc">
+																				</lightning-icon>
+																			</lightning-pill>
+																		</div>
+																	</template>
+																	<template if:false={isValueSelected}>
+																		<div class="slds-p-top_none">
+																			<lightning-input class={inputClass} type="search" id="input"
+																				value={searchTerm} onclick={handleClick} onblur={onBlur}
+																				onchange={onChange} variant="label-hidden" autocomplete="off"
+																				placeholder={searchPlaceholder}>
+																			</lightning-input>
+																		</div>
+																	</template>
+																</div>
+																<div id="listbox-id-1"
+																	class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
+																	role="listbox">
+																	<ul class="slds-listbox slds-listbox_vertical" role="presentation">
+																		<template for:each={records} for:item="record">
+																			<li key={record.Id} onclick={onSelect} data-id={record.Id}
+																				role="presentation" data-name={record.Name}>
+																				<span class="slds-lookup_item-action slds-lookup_item-action--label" role="option">
+																	<lightning-icon class="slds-icon slds-icon--small slds-icon-text-default" icon-name={iconName} alternative-text={objName} size="small"></lightning-icon>
+																	<span class="slds-truncate">{record.Name}</span>
+																				</span>
+																			</li>
+																		</template>
+																	</ul>
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                               </lightning-accordion-section>
+                        </lightning-accordion>
+					</div>
+					<!--Modal/Popup Box Footer Starts here-->
+                    <footer class="slds-modal__footer">
+						<lightning-button variant="neutral"
+                                          label="Cancel"
+                                          title="Cancel"
+                                          onclick={closeModal}></lightning-button>
+                        <lightning-button variant="brand"
+                                          type="submit"
+                                          name="update" 
+                                          label="Update" ></lightning-button>
+                    </footer>
+				</lightning-record-edit-form>
+			</div>	
+		</section>
+		<div class="slds-backdrop slds-backdrop_open"></div>
+	</template>
+	<div if:false={assetData}>
+		<center>
+			<ul>There is not any Asset Hierarchy for {assetName} </ul>
+		</center>
+	</div>
+</template>

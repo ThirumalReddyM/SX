@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT" description="Generic lightning event">
+    <aura:attribute name="type" type="String"/>
+    <aura:attribute name="params" type="Object"/>    
+</aura:event>

@@ -1,0 +1,153 @@
+.THIS .section-header {
+    font-weight:bold;
+    font-size:1.1em;
+    margin-left:5px;
+}
+
+.THIS .page-title {
+    font-weight:bold;
+    font-size:1.2em;
+    margin-left:5px;
+}
+
+.THIS .products-table {
+    width:100%;
+}
+
+.THIS .products-table-row {
+    display:flex;
+    flex-wrap: wrap;
+    margin:3px;
+	align-items: center;
+    justify-content: center;
+}
+
+.THIS .header {
+	font-weight:bold;    
+    color:white;
+    background-color:darkslategray;
+    padding:5px;
+    border-radius:3px;
+}
+
+.THIS .striped:nth-of-type(even) {
+    background-color:aliceblue;
+}
+
+.THIS .products-table-cell {
+	flex:1;
+}
+
+/*
+.THIS .won-products-container > .products-table > .products-table-row > .products-table-cell:first-child {
+	flex:0.5;
+}
+
+.THIS .lost-products-container > .products-table > .products-table-row > .products-table-cell:first-child {
+	flex:0.5;
+}
+*/
+
+.THIS .products-table-cell > input[type="checkbox"] {
+    margin-top:3px;
+}
+
+.THIS .paging-cell {
+    text-align:center;
+}
+
+.THIS .buttons-cell {
+    margin-bottom:10px;
+}
+
+.THIS .selected-count {
+    background-color:lightgoldenrodyellow;
+}
+
+.THIS .matched-count {
+    background-color:lightgoldenrodyellow;
+}
+
+.THIS .opp-header-container {
+	border:1px solid lightblue;
+	padding:5px;
+    margin:5px;    
+	margin-bottom: 10px;
+    border-radius:10px;
+}
+
+.THIS .opp-header-container > .table {
+    width:100%;
+}
+
+.THIS .opp-header-container > .table > .row {
+    display:flex;
+    flex-wrap: wrap;
+    margin:3px;
+}
+
+.THIS .opp-header-container > .table > .row > .cell {
+	flex:1;
+    padding:5px;
+}
+
+.THIS .opp-header-container > .table > .row > .cell:first-child {
+	text-align: right;
+    font-style: italic;
+    border-right: 3px solid aliceblue ;
+}
+
+.THIS .won-products-container {
+	border:1px solid lightblue;
+	padding:5px;
+    margin:5px;    
+    border-radius:10px;
+}
+
+.THIS .lost-products-container {
+	border:1px solid lightblue;
+	padding:5px;
+    margin:5px;    
+    border-radius:10px;
+}
+
+.THIS .change-products-container {
+	border:1px solid lightblue;
+	padding:5px;
+    margin:5px;    
+    border-radius:10px;
+}
+
+.THIS .match {
+    color:green;
+}
+
+.THIS .messages {
+    color: white;
+    background-color: seagreen;
+    border-radius:5px;
+    line-height:30px;
+    text-align:center;
+}
+
+.THIS .hide-me {
+    display:none;
+}
+
+/* hide select up arrow */
+.THIS .cInputPicklist.slds-select_container {
+    width:95%;
+    margin:3px;
+}
+
+/*
+.THIS .cInputPicklist.slds-select_container:before {
+    display:none;
+}
+*/
+/* adjust position of select down arrow */
+/*
+.THIS .cInputPicklist.slds-select_container:after {
+    bottom: calc((1.75rem / 2) - 9px);
+}
+*/

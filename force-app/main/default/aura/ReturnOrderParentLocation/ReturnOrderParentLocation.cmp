@@ -1,0 +1,111 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:lightningQuickAction,lightning:isUrlAddressable,force:hasRecordId" controller="ReturnOrderHandler">
+    <aura:attribute name="selectedRecord" type="Object" default="" description="selected Record Details" />
+    <aura:attribute name="locationid" type="String" default=""/>
+    <aura:attribute name="pageReference" type="Object"/>
+    
+    <aura:attribute name="locationrows" type="Object" default=""/>
+    <aura:attribute name="locationcols" type="List" default=""/>
+    <aura:attribute name="locationoriginalData" type="Object" default=""/>
+    <aura:attribute name="locationloaded" type="Boolean" default="false"/>
+    <aura:attribute name="locationcurrentIndex" type="Integer"/>
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="record" type="Object"/>
+    <aura:attribute name="recordFields" type="Object"/>
+    <aura:attribute name="recordLoadError" type="String"/>
+    <aura:attribute name="locationidLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="searchedParam" type="String"/>
+    <aura:attribute name="returnOrderLineItemDetails" type="String"/>
+    <aura:attribute name="selectedLocation" type="String"/>
+    <aura:attribute name="selectedLocationName" type="String"/>
+    <lightning:navigation aura:id="navService"/>
+    <lightning:workspaceAPI aura:id="workspace"/>
+    
+    <aura:handler name="ReturnOrderSubmitEvent" event="c:ReturnOrderSubmitEvent" action="{!c.handleOnSubmit}"/>
+    
+    <aura:if isTrue="{!v.locationidLoaded}">
+        <force:recordData aura:id="recordLoader"
+                          recordId="{!v.locationid}"
+                          fields="Id,Name,Service_Resource__c,Country_Mapping__r.Return_Location__c"
+                          mode="VIEW"
+                          targetRecord="{!v.record}"
+                          targetFields="{!v.recordFields}"
+                          targetError="{!v.recordLoadError}"
+                          />
+        <!-- <div>
+          targetFields:
+           WorkOrderid :  {!v.workOrderId}<br/>
+           WorkOrderid :  {!v.recordFields.Id}<br/>
+           Group Member :  {!v.recordFields.FS_Group_Member__c}<br/>
+           WorkOrderNumber : {!v.recordFields.WorkOrderNumber}<br/>
+           Location : {!v.recordFields.LocationId}<br/>
+           ReturnLocation : {!v.recordFields.Location.Country_Mapping__r.Return_Location__c}<br/>
+        </div> -->
+    </aura:if>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInIt}"/>
+    <aura:handler name="SelectRow" event="c:TableEvent" action="{!c.handleSelect}"/>
+    <aura:handler name="SearchEvent" event="c:ReturnOrderEvent" action="{!c.handleSearch}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModal}"/>
+    
+    <!-- <aura:handler name="LookupEvent" event="c:CustomLookupEvent" action="{!c.parentComponentEvent}"/> -->
+    
+    
+    <div class="slds-p-around_xxx-small"> 
+        <lightning:card title="Return Order" iconName="standard:return_order">
+            <aura:set attribute="actions">
+                <lightning:buttonIcon iconName="utility:close" size="large" variant="bare" title="Close" onclick="{!c.handleCancel}"/>
+                <lightning:buttonIcon iconName="utility:save" size="large" variant="bare" title="Save" onclick="{!c.handleSubmitOrderLine}"/>
+            </aura:set>
+            <lightning:recordEditForm aura:id="ReturnOrderCreateForm"
+                                      density="comfy"
+                                      objectApiName="ReturnOrder"
+                                      
+                                      onsuccess="{!c.handleOnSuccess}"
+                                      onerror="{!c.handleError}">
+                <lightning:messages aura:id="ReturnOrderMessage"/>
+                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="informationSection">
+                    <lightning:accordionSection name="informationSection" label="Return Order Information">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="field"  fieldName="FS_RMA_Type__c" required="true"></lightning:inputField>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="field" fieldName="SVC_Assigned_Technician__c" value="{!v.recordFields.Service_Resource__c}" disabled="true"></lightning:inputField>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="field" fieldName="FS_Courier__c" required="true"></lightning:inputField>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="field" fieldName="FS_Tracking_Number__c" required="true"></lightning:inputField>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="destinationLocation" fieldName="DestinationLocationId" value="{!v.recordFields.Country_Mapping__r.Return_Location__c}" disabled="true"></lightning:inputField>
+                            </lightning:layoutItem>
+                            <aura:if isTrue="{!$Browser.formFactor == 'DESKTOP'}">
+                                <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small"></lightning:layoutItem>
+                            </aura:if>              
+                        </lightning:layout>
+                    </lightning:accordionSection>
+                </lightning:accordion>
+                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="sourceLocSection">
+                    <lightning:accordionSection name="sourceLocSection" label="Source Location Information">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="sourcelocation" fieldName="SourceLocationId" value="{!v.recordFields.Id}" disabled="true"/>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:accordionSection>
+                </lightning:accordion>                
+                <!--lightning:button label="Save" type="submit" variant="brand"/ -->
+            </lightning:recordEditForm>
+            
+            <c:ReturnOrderLinesLocation aura:id="linesCmp" pageReference="{!v.pageReference}"/>
+        </lightning:card>
+        <aura:if isTrue="{!v.locationloaded}">
+            <c:TableChild rows="{!v.locationrows}" cols="{!v.locationcols}" originalData="{!v.locationoriginalData}" objectName="{!v.objectName}"/>
+        </aura:if>
+        
+        <!-- <c:ReturnOrderLinesComponent/> -->
+    </div>
+    
+</aura:component>

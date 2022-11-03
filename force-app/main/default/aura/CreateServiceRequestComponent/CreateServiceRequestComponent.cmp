@@ -1,0 +1,148 @@
+<aura:component controller="CreateServiceRequestController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader">
+    
+    <aura:attribute name="isLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="assetMap" type="Map" default=""/>
+    <aura:attribute name="accountMap" type="Map" default=""/>
+    <aura:attribute name="contactMap" type="Map" default=""/>
+    
+    <aura:attribute name="currentObjectName" type="String" default=""/>
+    
+    <lightning:navigation aura:id="navService"/>
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <lightning:spinner aura:id="loadSpinner" variant="brand" alternativeText="Loading..." size="medium"/>
+    <lightning:spinner aura:id="saveSpinner" variant="brand" class="spins slds-hide" alternativeText="Loading..." size="medium"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:html tag="style">
+        .slds-modal__container{
+            max-width: 90rem !important;
+            width: 50% !important;
+            height: 745px;
+        }
+        .cuf-content {
+        	padding: 0 0rem !important;
+        }
+        .slds-p-around--medium {
+        	padding: 0rem !important;
+        }
+        .slds-p-around_small{
+        	padding: 0.25rem;
+        }
+        .toastMessage.forceActionsText{
+            white-space : pre-line !important;
+            font-size: var(--lwc-fontSize3,0.975rem);
+        }
+    </aura:html>
+    
+    <div class="slds-modal__header">
+        <h4 class="slds-text-heading--medium">Create Service Request Case</h4>
+    </div>
+    
+    <aura:if isTrue="{!v.isLoaded}">
+        <div class="slds-modal__content slds-p-around_medium" style="height:500px;">
+            <lightning:recordEditForm aura:id="CreateServiceRequestCaseForm" density="comfy" objectApiName="Case">
+                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="section1">
+                    <lightning:accordionSection name="section1" label="Service Request Case Information">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="AccountId"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Service_Request_Type__c" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField fieldName="ServiceContractId"/>
+                        	</lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="ContactId"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Operating_Unit__c" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Priority"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="ProductId"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Status"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="AssetId"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Origin" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="PO_Number__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Severity__c" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_PO_Value__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="OwnerId"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Cost_Center__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Incident_Date_Time__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="CurrencyIsoCode"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="SVC_Reported_Date_Time__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="TAC_Declined__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Delay_Reason_Codes__c"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="End_User__c"/>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:accordionSection>
+                </lightning:accordion>
+                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="section2">
+                    <lightning:accordionSection name="section2" label="Service Request Information">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Subject" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="Description"/>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:accordionSection>
+                </lightning:accordion>  
+                <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="section3">
+                    <lightning:accordionSection name="section3" label="Tech Assignment">
+                        <lightning:layout multipleRows="true">
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="FS_Primary_FSE__c" required="true"/>
+                            </lightning:layoutItem>
+                            <lightning:layoutItem mediumDeviceSize="6" size="12" flexibility="auto" padding="around-small">
+                                <lightning:inputField aura:id="caseInput" fieldName="FS_Secondary_FSE__c"/>
+                            </lightning:layoutItem>
+                        </lightning:layout>
+                    </lightning:accordionSection>
+                </lightning:accordion>
+            </lightning:recordEditForm>
+        </div>
+    </aura:if>
+    
+    <div class="slds-modal__footer">
+        <lightning:button variant="Neutral" label="Cancel" onclick="{!c.handleCancel}"/>
+        <lightning:button variant="Brand" label="Save" onclick="{!c.handleSave}"/>
+    </div>
+    
+</aura:component>

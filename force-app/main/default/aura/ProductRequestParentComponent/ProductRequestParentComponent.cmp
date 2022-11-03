@@ -1,0 +1,198 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:appHostable,force:lightningQuickAction,lightning:isUrlAddressable,force:hasRecordId" controller="ProductRequestHandler">
+    
+    <lightning:navigation aura:id="navService"/>
+    <lightning:workspaceAPI aura:id="workspace"/>
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+    
+    <aura:attribute name="pageReference" type="Object"/>
+    
+    <aura:attribute name="spinner" type="Boolean" default="true"/>
+    
+    <aura:attribute name="workOrderId" type="String" default=""/>
+    <aura:attribute name="workOrderRecord" type="WorkOrder" default=""/>
+    <aura:attribute name="locationId" type="String" default=""/>
+    <aura:attribute name="locationRecord" type="Location" default=""/>
+    <aura:attribute name="currentObjectName" type="String" default=""/>
+    <aura:attribute name="destinationLocationName" type="String"/>
+    
+    <aura:attribute name="locationRecords" type="Object" default=""/>
+    <aura:attribute name="locationFields" type="List" default=""/>
+    <aura:attribute name="locationOrginalRecords" type="Object" default=""/>
+    <aura:attribute name="locationLoaded" type="Boolean" default="false"/>
+    <aura:attribute name="locationCurrentIndex" type="Integer"/>
+    
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="searchedParam" type="String"/>
+    
+    <aura:handler name="SelectRow" event="c:TableEvent" action="{!c.handleSelectForLocation}"/>
+    <aura:handler name="SearchEvent" event="c:ReturnOrderEvent" action="{!c.handleSearchForLocation}"/>
+    <aura:handler name="CloseModal" event="c:ModalCloseEvent" action="{!c.handleCloseModalForLocation}"/>
+    
+    <aura:attribute name="itemStatusType" type="String" />
+    
+    <aura:attribute name="listOfRequestLines" type="List" default="[]"/>
+    <aura:attribute name="loaded" type="Boolean" default="false"/>
+    <aura:attribute name="locationTypeList" type="List" default="['--None--','FSE Location','Alternate Location']"/>
+    <aura:attribute name="locationType" type="String" default="--None--"/>
+    <aura:handler name="RemoveEvent" event="c:RemoveRowEvent" action="{!c.removeSelectedRow}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInitialization}"/>
+    
+    <aura:html tag="style">
+        .toastMessage.forceActionsText{
+        white-space : pre-line !important;
+        font-size: var(--lwc-fontSize3,0.975rem);
+        }
+    </aura:html>
+    <lightning:card title="Product Request" iconName="standard:product_request">
+        <aura:if isTrue="{!v.spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+                <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                    <span class="slds-assistive-text">Loading...</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </aura:if>
+        <aura:set attribute="actions">
+            <lightning:buttonIcon iconName="utility:close" size="large" variant="bare" title="Close" onclick="{!c.handleCancel}"/>
+            <lightning:buttonIcon iconName="utility:save" size="large" variant="bare" title="Save" onclick="{!c.handleSaveRecords}"/>
+        </aura:set>
+        <lightning:recordEditForm aura:id="ProductRequestCreateForm" 
+                                  density="comfy"
+                                  objectApiName="ProductRequest" 
+                                  onsubmit="{!c.handleOnSubmit}"
+                                  onsuccess="{!c.handleOnSuccess}"
+                                  onerror="{!c.handleError}"
+                                  onload="{!c.handleOnLoad}"
+                                  >    
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="LocationSection">
+                <lightning:accordionSection name="LocationSection" label="Location">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Type</label>
+                            <lightning:select class="hide-label" variant="label-hidden" label="" aura:id="locType" onchange="{!c.handleLocationTypeChange}" value="{!v.locationType}">
+                                <aura:iteration items="{!v.locationTypeList}" var="loc">
+                                    <option value="{!loc}" text="{!loc}"></option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="informationSection">
+                <lightning:accordionSection name="informationSection" label="Information">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Account</label>
+                            <lightning:inputField variant="label-hidden" aura:id="accId" fieldName="AccountId"  disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Status</label>
+                            <lightning:inputField variant="label-hidden" fieldName="Status" aura:id="statusInpField" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Contact Name</label>
+                            <lightning:inputField variant="label-hidden" fieldName="SVC_ContactName__c"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Source Location</label>
+                            <lightning:inputField variant="label-hidden" fieldName="SourceLocationId" aura:id="sourcLocInpField" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Contact Phone</label>
+                            <lightning:inputField variant="label-hidden" fieldName="SVC_ContactPhone__c"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Needby Date<span style="color:red;padding-left: 2px;">*</span></label>
+                            <lightning:inputField variant="label-hidden" aura:id="needByDate" fieldName="NeedByDate"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Assigned Technician</label>
+                            <lightning:inputField variant="label-hidden" fieldName="SVC_Service_Resource__c" aura:id="servResInpField"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Shipment Priority<span style="color:red;padding-left: 2px;">*</span></label>
+                            <lightning:inputField variant="label-hidden"  aura:id="shipmentPriority" fieldName="SVC_Shipment_Priority__c"/>
+                        </lightning:layoutItem>
+                        <aura:if isTrue="{!v.currentObjectName == 'WorkOrder'}">
+                            <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                                <label>Work Order<span style="color:red;padding-left: 2px;">*</span></label>
+                                <lightning:inputField variant="label-hidden" fieldName="WorkOrderId" aura:id="workOrderLookupInpField" disabled="true"/>
+                            </lightning:layoutItem>
+                        </aura:if>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Additional Information</label>
+                            <lightning:inputField variant="label-hidden" fieldName="FS_Additional_Information__c"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            <lightning:accordion allowMultipleSectionsOpen="true" activeSectionName="shipToSection">
+                <lightning:accordionSection name="shipToSection" label="ShipTo">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Destination Location<span style="color:red;padding-left: 2px;">*</span></label>
+                            <aura:if isTrue="{!v.locationType != 'All Locations'}">
+                                <lightning:input type="search" variant="label-hidden" value="{!v.destinationLocationName}" onclick="{!c.openLocation}" placeholder="Search Location"/>
+                            </aura:if>
+                            <lightning:inputField variant="label-hidden" aura:id="destinationLoc" fieldName="DestinationLocationId" onchange="{!c.handleDestinationLocation}" class="slds-hide"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small">
+                            <label>Address</label>
+                            <lightning:inputField variant="label-hidden" fieldName="ShipToStreet" aura:id="shipStreet" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small"></lightning:layoutItem>
+                        <lightning:layoutItem size="4" flexibility="auto" padding="around-small">
+                            <label>City</label>
+                            <lightning:inputField variant="label-hidden" fieldName="ShipToCity" aura:id="shipCity" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="2" flexibility="auto" padding="around-small">
+                            <label>State/Province</label>
+                            <lightning:inputField variant="label-hidden" fieldName="ShipToState" aura:id="shipState" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="6" flexibility="auto" padding="around-small"></lightning:layoutItem>
+                        <lightning:layoutItem size="4" flexibility="auto" padding="around-small">
+                            <label>Zip/Postal Code</label>
+                            <lightning:inputField variant="label-hidden" fieldName="ShipToPostalCode" aura:id="shipPostal" disabled="true"/>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="2" flexibility="auto" padding="around-small">
+                            <label>Country</label>
+                            <lightning:inputField variant="label-hidden" fieldName="ShipToCountry" aura:id="shipCountry" disabled="true"/>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </lightning:accordionSection>
+            </lightning:accordion>
+            <lightning:card title="Lines" iconName="standard:product_request_line_item">
+                <lightning:tabset variant="scoped" class="paddingClass">
+                    <lightning:tab label="Product Request Line Items">
+                        <lightning:buttonIcon iconName="utility:add" aura:id="material" variant="bare" title="Add a Row" onclick="{!c.addNewRow}"/>
+                        <br></br>
+                        <br></br>
+                        <aura:if isTrue="{!v.loaded}">
+                            <div aura:id="linesDiv">
+                                <table class="slds-table slds-table_bordered" role="grid">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" height="22" style="width:3rem;">No.</th>
+                                            <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Products</th>
+                                            <th class="minWidthClass" scope="col" height="22"><span class="colorClass">*</span> Expected Qty</th>
+                                            <th scope="col" height="22" style="width: 3rem"></th>                                        
+                                        </tr>                                    
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.listOfRequestLines}" var="item">
+                                            <c:ProductRequestLinesComponent pageReference="{!v.pageReference}" rec="{!item}"/>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </aura:if>
+                    </lightning:tab>
+                </lightning:tabset>
+            </lightning:card>
+        </lightning:recordEditForm>
+    </lightning:card>
+    <aura:if isTrue="{!v.locationLoaded}">
+        <c:TableChild rows="{!v.locationRecords}" cols="{!v.locationFields}" originalData="{!v.locationOriginalRecords}" objectName="{!v.objectName}" indexProd="{!v.locationCurrentIndex}" headerName="Search Location"/>
+    </aura:if>
+</aura:component>
